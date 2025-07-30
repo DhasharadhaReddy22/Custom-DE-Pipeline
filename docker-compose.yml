@@ -10,3 +10,28 @@ services:
       POSTGRES_PASSWORD: db_password
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
+      # the following is to make postgres recognise the airflow_init.sql script and execute is before moving on to airflow set up
+      - ./postgres/airflow_init.sql:/docker-entrypoint-initdb.d/airflow_init.sql 
+    networks:
+      - my-network
+
+  af:
+    container_name: airflow
+    image: apache/airflow:3.0.0
+    ports:
+      - 8000:8080
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@db:5432/airflow_db
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+      - ./src/python_scripts:/opt/airflow/python_scripts
+    depends_on: # to start after db set up
+      - db
+    networks:
+      - my-network
+    command: > # this is to migrate the necessary Airflow metadata database schema && spins up a local webserver, scheduler, and runs initialization for development
+      bash -c "airflow db migrate && airflow standalone"
+
+networks: # to communicate internally with other containers
+  my-network:
+    driver: bridge

@@ -3,9 +3,12 @@ from dotenv import load_dotenv
 import os
 from pathlib import Path
 
-project_root = Path(__file__).resolve().parent.parent
+project_root = Path(__file__).resolve().parent.parent.parent
 env_path = project_root / '.env'
 load_dotenv(dotenv_path=env_path)
+
+print(project_root)
+print(env_path)
 
 API_KEY = os.getenv("API_KEY")
 api_url = f"http://api.weatherstack.com/current?access_key={API_KEY}&query=New York"
