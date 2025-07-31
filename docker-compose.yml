@@ -25,12 +25,31 @@ services:
     volumes:
       - ./src/airflow/dags:/opt/airflow/dags
       - ./src/python_scripts:/opt/airflow/python_scripts
+      - /var/run/docker.sock:/var/run/docker.sock # this is to establish connection with our sock to docker sock
+    group_add: # this is done to provide permission to access and run the docker.sock
+      - '1001' # checked using stat -c '%g' /var/run/docker.sock
     depends_on: # to start after db set up
       - db
     networks:
       - my-network
     command: > # this is to migrate the necessary Airflow metadata database schema && spins up a local webserver, scheduler, and runs initialization for development
       bash -c "airflow db migrate && airflow standalone"
+
+  dbt:
+    container_name: dbt
+    image: ghcr.io/dbt-labs/dbt-postgres:1.9.latest
+    volumes:
+      - ./dbt/dbt_project:/usr/app
+      - ./dbt:/root/.dbt
+    working_dir: /usr/app
+    environment:
+      DBT_PROFILES_DIR: 
+    depends_on: 
+      - db
+    networks:
+      - my-network
+    command: >
+      run
 
 networks: # to communicate internally with other containers
   my-network:
