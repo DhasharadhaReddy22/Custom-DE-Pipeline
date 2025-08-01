@@ -7,6 +7,10 @@ from datetime import datetime, timedelta
 import sys
 
 sys.path.append('/opt/airflow/python_scripts')
+# Airflow executes your DAG scripts inside a container whose default 
+# Python path does not include every arbitrary code directory. By default,
+# Standard library modules, packages installed via pip within the container, 
+# or files in the same directory as the running script (/opt/airflow/dags in Airflow).
 from insert_records import main
 
 default_args = {
